@@ -10,15 +10,24 @@
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
         integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
 
+    <!-- Material Icons -->
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+
+
     <title>Rock Paper Scissors</title>
 </head>
 
 <body>
-    <nav class="navbar navbar-light bg-primary mb-3">
-        <div class="container">
-            <span class="navbar-brand h1">Rock. Paper. Scissors.</span>
-        </div>
+        <div class="container mb-3 bg-primary">
+        <nav class="navbar navbar-dark ">
+           
+            <h1 class="display-5 p-2">
+                <i class="large material-icons">filter_hdr</i> Rock <i class="large material-icons">filter_hdr</i> <br>
+                <i class="large material-icons">content_copy</i> Paper <i class="large material-icons">content_copy</i> <br>
+                <i class="large material-icons">content_cut</i> Scissors <i class="large material-icons">content_cut</i> 
+            </h1>
     </nav>
+</div>
 
     <!--Row 1-->
     <div class="container">
@@ -28,15 +37,15 @@
                 <!--sub row 1-->
                 <div class="row">
                     <div class="card">
-                        <div class="card-header">Make your play</div>
+                        <div class="card-header bg-secondary text-white">Make your play</div>
                         <div class="card-title p-3" id="pname"></div>
-                        <div class="card-body" id="rpsPlaceholder"></div>
+                        <div class="card-body lead" id="rpsPlaceholder"></div>
                     </div>
                 </div>
                 <!--sub row 2-->
                 <div class="row">
-                    <div class="card m-3">
-                        <div class="card-header">The Score</div>
+                    <div class="card my-3">
+                        <div class="card-header bg-secondary text-white">The Score</div>
                         <div class="card-body" id="scorePlaceholder"></div>
                     </div>
                 </div>
@@ -45,9 +54,10 @@
             <!--column 2-->
             <div class="col-md-6">
                 <div class="card">
-                    <div class="card-header">Talk some smack</div>
+                    <div class="card-header bg-secondary text-white">Talk some smack</div>
                     <div class="card-body">
                         <div class="card-text" id="chatPlaceholder"></div>
+                        <br><br>
                         <form>
                             <div class="form-group">
                                 <label for="message">Message</label>
@@ -64,7 +74,7 @@
     </div>
 
     <!--Login Modal-->
-    <div class="modal" tabindex="-1" role="dialog" id="enterNameModal" >
+    <div class="modal" tabindex="-1" role="dialog" id="enterNameModal">
         <div class="modal-dialog" role="document">
             <div class="modal-content">
                 <div class="modal-header">
@@ -87,17 +97,18 @@
     </div>
 
     <!--Results Modal-->
-    <div class="modal fade" id="showResultModal" tabindex="-1" role="dialog" aria-labelledby="showResult" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered" role="document">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="showResult">The Result</h5>
-        <div class="card-body" id="theResult"></div>
-        <button type="submit" class="btn btn-primary mt-2 text-white" id="closeResult">Ok</button>
-      </div>
+    <div class="modal fade" id="showResultModal" tabindex="-1" role="dialog" aria-labelledby="showResult"
+        aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="showResult">The results are in...</h5>
+                    <div class="card-body" id="theResult"></div>
+                    <button type="submit" class="btn btn-primary mt-2 text-white" id="closeResult">Next Round</button>
+                </div>
+            </div>
+        </div>
     </div>
-  </div>
-</div> 
 
 
     <!-- Optional JavaScript -->

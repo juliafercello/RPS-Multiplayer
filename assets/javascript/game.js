@@ -16,6 +16,7 @@ var numberOfPlayers = database.ref("/numOfPlayers");
 var numberOfConnections = database.ref(".info/connected");
 var allowedPlayers = 2;
 var plays = ["Rock", "Paper", "Scissors"];
+var playerId = 0; 
 
 function displayButtons(player) {
     $("#rpsPlaceholder").empty();
@@ -29,7 +30,7 @@ function displayButtons(player) {
     }
 };
 
-//Chat feature
+//Chat Feature
 $("#chatBtn").on("click", function (event) {
     event.preventDefault();
     var message = $("#message").val().trim();
@@ -55,24 +56,32 @@ database.ref("/messages").orderByChild("dateAdded").on("child_added", function (
     console.log("The read failed: " + errorObject.code);
 });
 
-//DO I NEED THIS STILL???  if so, add errors. 
+//DO I NEED THIS STILL???  if so, add error thing for read. 
 // When the client's connection state changes...
-numberOfConnections.on("value", function (snapshot) {
+
+// numberOfConnections.on("value", function (snapshot) {
+//  if (!snapshot.val()) {
+//      if ((playerId === "1") || (playerId === "2")) {
+//         database.ref("/player" + playerId).remove(); 
+//      }
+    
+//  }
+// });
     // If they are connected..
-    if (snapshot.val()) {
-        // Add user to the connections list.
-        var player = numberOfPlayers.push(true);
-        // Remove user from the connection list when they disconnect.
-        // player.onDisconnect().remove();
-    }
-});
+    // if (snapshot.val()) {
+    //     // Add user to the connections list.
+    //     var player = numberOfPlayers.push(true);
+    //     // Remove user from the connection list when they disconnect.
+    //     player.onDisconnect().remove();
+    // }
+//});
 //SAME HERE
 //when a new user arrives, check to see if there are already two players
-numberOfPlayers.once("value", function (snap) {
-    if (parseInt(snap.numChildren()) > allowedPlayers) {
-        alert("nope");
-    }
-});
+// numberOfPlayers.once("value", function (snap) {
+//     if (parseInt(snap.numChildren()) > allowedPlayers) {
+//         alert("nope");
+//     }
+// });
 
 //start the game by showing a modal for user to enter their name
 $(document).ready(function () {
@@ -93,10 +102,12 @@ $("#submitName").on("click", function (event) {
                 name: name,
                 score: 0,
                 role: "player1",
-                choice: "none"
+                choice: "none",
             });
+            database.ref("/player1").onDisconnect().remove();
 
-            $("#pname").text("player 1: " + name)
+            playerId = "1"; 
+            $("#pname").text("Player 1: " + name)
             displayButtons("player1");
             sessionStorage.setItem("role", "player1");
         }
@@ -108,17 +119,23 @@ $("#submitName").on("click", function (event) {
                 choice: "none"
             });
 
+            database.ref("/player2").onDisconnect().remove();
 
-            $("#pname").text("player 2: " + name)
+            playerId = "2"; 
+            $("#pname").text("Player 2: " + name)
             displayButtons("player2");
             sessionStorage.setItem("role", "player2");
-
         }
         else {
             database.ref("/spectator").push({
                 name: name
             });
             
+           // var key = database.ref().child("spectator").push().getKey();
+           // database.ref().child("spectator").child(key).remove(); // This is how you remove it
+
+            //database.ref("/spectator/").onDisconnect().remove();
+
             $("#pname").text("Sorry " + name + ", but you'll have to wait your turn...  The game is already in progress.");
             sessionStorage.setItem("role", "spectator");
         }
@@ -131,7 +148,7 @@ $("#submitName").on("click", function (event) {
 
 //Display Score
 database.ref().on("value", function (snapshot) {
-    //Make sure the players exist before checking their choice
+    //Make sure the players exist before checking their score
     if (snapshot.child("player1").exists() && snapshot.child("player2").exists()) {
     $("#scorePlaceholder").empty();
     var player1 = snapshot.val().player1.name;
@@ -185,57 +202,56 @@ database.ref().on("value", function (snapshot) {
         var result = ""; 
 
         if (player1Choice !== "none" && player2Choice !== "none") {
+            //tie
             if (player1Choice === player2Choice) {
-                alert("it's a tie!!");
                 result = "It's a tie!!"
             }
+            //player 1 wins
             else if ((player1Choice == "Rock" && player2Choice == "Scissors") || (player1Choice == "Scissors" && player2Choice == "Paper") || (player1Choice == "Paper" && player2Choice == "Rock")) {
-                // alert("player 1 wins!");
                 var p1Score = snapshot.val().player1.score + 1;
 
                 database.ref("/player1").update({
                     score: p1Score,
                     choice: "none"
                 });
-                //Update player 2 choice to none
+
+                database.ref("/player2").update({
+                    choice: "none"
+                });
+                
                 result = player1Name + " wins!";
             }
+            //player 2 wins
             else {
-                //alert("player 2 wins!");
                 var p2Score = snapshot.val().player2.score + 1;
                 database.ref("/player2").update({
                     score: p2Score,
                     choice: "none"
                 });
-                //update player 1 choice to none
-
+                
+                database.ref("/player1").update({
+                    choice: "none"
+                });
+                
                 result = player2Name + " wins!";
-
             };
         
         //Show the result of who won/lost
         $("#theResult").empty(); 
         var choicesDiv = $("<div>")
-        choicesDiv.html(player1Name + ": " + player1Choice + "<br>" + player2Name + ": " + player2Choice)
-        var resultDiv = $("<div>")
-        resultDiv.text(result)
+        choicesDiv.html(player1Name + ": " + player1Choice + "<br>" + player2Name + ": " + player2Choice + "<br>")
+        choicesDiv.addClass("lead")
 
+        var resultHdr = $("<h3>")
+        resultHdr.html(result);
         $("#theResult").append(choicesDiv); 
-        $("#theResult").append(resultDiv);
-
+        $("#theResult").append(resultHdr);
         $("#showResultModal").modal('show');
-        
-        //var nextRound = setTimeout(newRound, 3000);
         }
     }
-
 }, function (errorObject) {
     console.log("The read failed: " + errorObject.code);
 });
-
-function newRound () {
-    $("#showResultModal").modal('hide');
-}
 
 $("#closeResult").on("click", function (event) {
     event.preventDefault();
