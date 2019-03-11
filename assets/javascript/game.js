@@ -13,9 +13,8 @@ firebase.initializeApp(config);
 //Global Variables
 var database = firebase.database();
 var numberOfPlayers = database.ref("/numOfPlayers");
-var numberofConnections = database.ref(".info/connected");
+var numberOfConnections = database.ref(".info/connected");
 var allowedPlayers = 2;
-
 var plays = ["Rock", "Paper", "Scissors"];
 
 function displayButtons(player) {
@@ -50,10 +49,14 @@ database.ref("/messages").orderByChild("dateAdded").on("child_added", function (
     var newDiv = $("<div>");
     newDiv.text(childSnapshot.val().name + ": " + childSnapshot.val().message);
     $("#chatPlaceholder").append(newDiv);
+
+}, function (errorObject) {
+    console.log("The read failed: " + errorObject.code);
 });
 
+//DO I NEED THIS STILL???  if so, add errors. 
 // When the client's connection state changes...
-numberofConnections.on("value", function (snapshot) {
+numberOfConnections.on("value", function (snapshot) {
     // If they are connected..
     if (snapshot.val()) {
         // Add user to the connections list.
@@ -62,7 +65,7 @@ numberofConnections.on("value", function (snapshot) {
         // player.onDisconnect().remove();
     }
 });
-
+//SAME HERE
 //when a new user arrives, check to see if there are already two players
 numberOfPlayers.once("value", function (snap) {
     if (parseInt(snap.numChildren()) > allowedPlayers) {
@@ -70,7 +73,9 @@ numberOfPlayers.once("value", function (snap) {
     }
 });
 
-//start the game
+
+
+//start the game by showing a modal for user to enter their name
 $(document).ready(function () {
     $("#enterNameModal").modal('show');
 });
@@ -78,12 +83,12 @@ $(document).ready(function () {
 //User needs to enter their name
 $("#submitName").on("click", function (event) {
     event.preventDefault();
+
     var name = $("#playerName").val().trim();
     $("#chatBtn").attr("chatName", name);
 
     //Assign users to game
     database.ref().once("value", function (snapshot) {
-
         if (!snapshot.child("player1").exists()) {
             database.ref("/player1").set({
                 name: name,
@@ -110,7 +115,11 @@ $("#submitName").on("click", function (event) {
             database.ref("/spectator").push({
                 name: name
             });
+            $("#pname").text("Sorry " + name + ", but you'll have to wait your turn...  The game is already in progress.")
+
         }
+    }, function (errorObject) {
+        console.log("The read failed: " + errorObject.code);
     });
 
     $("#enterNameModal").modal('hide');
@@ -119,15 +128,15 @@ $("#submitName").on("click", function (event) {
 //Display Score
 database.ref().on("value", function (snapshot) {
     $("#scorePlaceholder").empty();
-    var Player1 = snapshot.val().player1.name;
+    var player1 = snapshot.val().player1.name;
     var player1Points = snapshot.val().player1.score;
-    var Player2 = snapshot.val().player2.name;
-    var player2Points = snapshot.val().player1.score;
+    var player2 = snapshot.val().player2.name;
+    var player2Points = snapshot.val().player2.score;
 
     var p1Score = $("<div>");
     var p2Score = $("<div>");
-    p1Score.text(Player1 + "(Player 1): " + player1Points);
-    p2Score.text(Player2 + "(Player 2): " + player2Points);
+    p1Score.text(player1 + "(Player 1): " + player1Points);
+    p2Score.text(player2 + "(Player 2): " + player2Points);
 
     $("#scorePlaceholder").append(p1Score);
     $("#scorePlaceholder").append(p2Score);
@@ -142,6 +151,7 @@ $(document.body).on("click", ".player1", function () {
     database.ref("/player1").update({
         choice: p1choice
     });
+
     $("#rpsPlaceholder").empty();
     $("#rpsPlaceholder").text("Wait for it...");
 });
@@ -158,23 +168,58 @@ $(document.body).on("click", ".player2", function () {
 
 //listen for choices to be made and determine the winner
 database.ref().on("value", function (snapshot) {
-    //could check to see if players exist yet...
-    var player1Choice = snapshot.val().player1.choice;
-    var player2Choice = snapshot.val().player2.choice;
+    //Make sure the players exist before checking their choice
+    if (snapshot.child("player1").exists() && snapshot.child("player2").exists()) {
+        var player1Choice = snapshot.val().player1.choice;
+        var player1Name = snapshot.val().player1.name;
 
-    if (player1Choice !== "none" && player2Choice !== "none") {
-        if (player1Choice === player2Choice) {
-            alert("it's a tie!!");
-        }
-        else if ((player1Choice == "Rock" && player2Choice == "Scissors") || (player1Choice == "Scissors" && player2Choice == "Paper") || (player1Choice == "Paper" && player2Choice == "Rock")) {
-            alert("player 1 wins!");
-        }
-        else {
-            alert("player 2 wins!");
+        var player2Choice = snapshot.val().player2.choice;
+        var player2Name = snapshot.val().player2.name;
+
+        var result = ""; 
+
+        if (player1Choice !== "none" && player2Choice !== "none") {
+            if (player1Choice === player2Choice) {
+                alert("it's a tie!!");
+                result = "It's a tie!!"
+            }
+            else if ((player1Choice == "Rock" && player2Choice == "Scissors") || (player1Choice == "Scissors" && player2Choice == "Paper") || (player1Choice == "Paper" && player2Choice == "Rock")) {
+                // alert("player 1 wins!");
+                var p1Score = snapshot.val().player1.score + 1;
+
+                database.ref("/player1").update({
+                    score: p1Score,
+                    choice: "none"
+                });
+
+                result = player1Name + " wins!";
+            }
+            else {
+                //alert("player 2 wins!");
+                var p2Score = snapshot.val().player2.score + 1;
+                database.ref("/player2").update({
+                    score: p2Score,
+                    choice: "none"
+                });
+
+                result = player2Name + " wins!";
+
+            };
+
+        var choicesDiv = $("<div>")
+        choicesDiv.html(player1Name + ": " + player1Choice + "<br>" + player2Name + ": " + player2Choice)
+        var resultDiv = $("<div>")
+        resultDiv.text(result)
+        
+        $("#theResult").append(choicesDiv); 
+        $("#theResult").append(resultDiv);
+        
         }
     }
-});
 
+}, function (errorObject) {
+    console.log("The read failed: " + errorObject.code);
+});
 
 //    //set total points from snapshot
 //    database.ref().on("value", function (snapshot) {
