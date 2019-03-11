@@ -40,13 +40,6 @@
                         <div class="card-body" id="scorePlaceholder"></div>
                     </div>
                 </div>
-            <!--sub row 3-->
-            <div class="row">
-                    <div class="card m-3">
-                        <div class="card-header">The Result</div>
-                        <div class="card-body" id="theResult"></div>
-                    </div>
-                </div>
             </div>
 
             <!--column 2-->
@@ -70,6 +63,7 @@
         </div>
     </div>
 
+    <!--Login Modal-->
     <div class="modal" tabindex="-1" role="dialog" id="enterNameModal" >
         <div class="modal-dialog" role="document">
             <div class="modal-content">
@@ -92,6 +86,18 @@
         </div>
     </div>
 
+    <!--Results Modal-->
+    <div class="modal fade" id="showResultModal" tabindex="-1" role="dialog" aria-labelledby="showResult" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="showResult">The Result</h5>
+        <div class="card-body" id="theResult"></div>
+        <button type="submit" class="btn btn-primary mt-2 text-white" id="closeResult">Ok</button>
+      </div>
+    </div>
+  </div>
+</div> 
 
 
     <!-- Optional JavaScript -->

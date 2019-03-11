@@ -18,6 +18,7 @@ var allowedPlayers = 2;
 var plays = ["Rock", "Paper", "Scissors"];
 
 function displayButtons(player) {
+    $("#rpsPlaceholder").empty();
     for (var i = 0; i < plays.length; i++) {
         var newButton = $("<button>");
         newButton.addClass("btn m-2 text-white btn-primary");
@@ -73,8 +74,6 @@ numberOfPlayers.once("value", function (snap) {
     }
 });
 
-
-
 //start the game by showing a modal for user to enter their name
 $(document).ready(function () {
     $("#enterNameModal").modal('show');
@@ -99,6 +98,7 @@ $("#submitName").on("click", function (event) {
 
             $("#pname").text("player 1: " + name)
             displayButtons("player1");
+            sessionStorage.setItem("role", "player1");
         }
         else if (!snapshot.child("player2").exists()) {
             database.ref("/player2").set({
@@ -108,15 +108,19 @@ $("#submitName").on("click", function (event) {
                 choice: "none"
             });
 
+
             $("#pname").text("player 2: " + name)
             displayButtons("player2");
+            sessionStorage.setItem("role", "player2");
+
         }
         else {
             database.ref("/spectator").push({
                 name: name
             });
-            $("#pname").text("Sorry " + name + ", but you'll have to wait your turn...  The game is already in progress.")
-
+            
+            $("#pname").text("Sorry " + name + ", but you'll have to wait your turn...  The game is already in progress.");
+            sessionStorage.setItem("role", "spectator");
         }
     }, function (errorObject) {
         console.log("The read failed: " + errorObject.code);
@@ -127,6 +131,8 @@ $("#submitName").on("click", function (event) {
 
 //Display Score
 database.ref().on("value", function (snapshot) {
+    //Make sure the players exist before checking their choice
+    if (snapshot.child("player1").exists() && snapshot.child("player2").exists()) {
     $("#scorePlaceholder").empty();
     var player1 = snapshot.val().player1.name;
     var player1Points = snapshot.val().player1.score;
@@ -140,7 +146,7 @@ database.ref().on("value", function (snapshot) {
 
     $("#scorePlaceholder").append(p1Score);
     $("#scorePlaceholder").append(p2Score);
-
+    }
 }, function (errorObject) {
     console.log("The read failed: " + errorObject.code);
 });
@@ -191,7 +197,7 @@ database.ref().on("value", function (snapshot) {
                     score: p1Score,
                     choice: "none"
                 });
-
+                //Update player 2 choice to none
                 result = player1Name + " wins!";
             }
             else {
@@ -201,25 +207,45 @@ database.ref().on("value", function (snapshot) {
                     score: p2Score,
                     choice: "none"
                 });
+                //update player 1 choice to none
 
                 result = player2Name + " wins!";
 
             };
-
+        
+        //Show the result of who won/lost
+        $("#theResult").empty(); 
         var choicesDiv = $("<div>")
         choicesDiv.html(player1Name + ": " + player1Choice + "<br>" + player2Name + ": " + player2Choice)
         var resultDiv = $("<div>")
         resultDiv.text(result)
-        
+
         $("#theResult").append(choicesDiv); 
         $("#theResult").append(resultDiv);
+
+        $("#showResultModal").modal('show');
         
+        //var nextRound = setTimeout(newRound, 3000);
         }
     }
 
 }, function (errorObject) {
     console.log("The read failed: " + errorObject.code);
 });
+
+function newRound () {
+    $("#showResultModal").modal('hide');
+}
+
+$("#closeResult").on("click", function (event) {
+    event.preventDefault();
+    $("#showResultModal").modal('hide');
+
+    var playerRole = sessionStorage.getItem("role"); 
+    if (playerRole !== "spectator") {
+        displayButtons(playerRole); 
+    }
+}); 
 
 //    //set total points from snapshot
 //    database.ref().on("value", function (snapshot) {
