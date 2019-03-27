@@ -6,6 +6,8 @@ This is a traditional take on the classic rock, paper, scissors game.  As users 
 
 The project utilizes firebase, session storage, jquery, bootstrap and javascript.
 
+The game can be played here: <a href="https://juliafercello.github.io/RPS-Multiplayer/">https://juliafercello.github.io/RPS-Multiplayer/</a>
+
 # Future Enhancements
 * Make the code dry
 * Notify spectators when a player spot opens up and let them switch their role
